@@ -9,6 +9,7 @@ interface Props {
   status: SyncStatus;
   onSave: (c: SyncConfig | null) => void;
   onSyncNow: () => void;
+  onScreenCheck: () => void;
   onClose: () => void;
 }
 
@@ -21,7 +22,7 @@ function exportBackup(data: AppData) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-export function SettingsSheet({ data, config, status, onSave, onSyncNow, onClose }: Props) {
+export function SettingsSheet({ data, config, status, onSave, onSyncNow, onScreenCheck, onClose }: Props) {
   const [owner, setOwner] = useState(config?.owner ?? '');
   const [repo, setRepo] = useState(config?.repo ?? 'plus-one-data');
   const [token, setToken] = useState('');
@@ -85,6 +86,7 @@ export function SettingsSheet({ data, config, status, onSave, onSyncNow, onClose
           </div>
         )}
         <button className="btn-secondary" onClick={() => exportBackup(data)}>Export backup file</button>
+        <button className="btn-text" onClick={onScreenCheck}>Check screen size</button>
       </div>
     </div>
   );

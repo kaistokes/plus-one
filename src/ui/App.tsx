@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { activeSession, startSession } from '../domain/schedule';
 import { HomeScreen } from './HomeScreen';
+import { ScreenCheck } from './ScreenCheck';
 import { SettingsSheet } from './SettingsSheet';
 import { useStore } from './useStore';
 import { WorkoutScreen } from './WorkoutScreen';
@@ -9,6 +10,7 @@ export function App() {
   const store = useStore();
   const [inWorkout, setInWorkout] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [screenCheck, setScreenCheck] = useState(false);
   if (!store.loaded) return null;
 
   const active = activeSession(store.data);
@@ -51,9 +53,14 @@ export function App() {
           status={store.status}
           onSave={(c) => void store.updateConfig(c)}
           onSyncNow={store.requestSync}
+          onScreenCheck={() => {
+            setSettingsOpen(false);
+            setScreenCheck(true);
+          }}
           onClose={() => setSettingsOpen(false)}
         />
       )}
+      {screenCheck && <ScreenCheck onClose={() => setScreenCheck(false)} />}
     </>
   );
 }
