@@ -1,36 +1,41 @@
 import { useState } from 'react';
 import { exercises, plans } from '../domain/catalogue';
-import { activeSession, finishedSessions, nextPlan, targetsFor } from '../domain/schedule';
+import { activeSession, nextPlan, targetsFor } from '../domain/schedule';
 import type { AppData, PlanId } from '../domain/types';
-import { longDate, shortDate, targetSummary } from './format';
+import { longDate, targetSummary } from './format';
 import { Icon } from './icons';
 import type { SyncStatus } from './useStore';
 
 interface Props {
   data: AppData;
   status: SyncStatus;
+  unsynced: boolean;
   onStart: (plan: PlanId) => void;
   onResume: () => void;
   onDiscard: (id: string) => void;
   onSettings: () => void;
 }
 
-const statusText = (s: SyncStatus) =>
-  ({
-    off: 'Backup off',
-    syncing: 'Syncing…',
-    synced: 'Synced',
-    offline: 'Offline, syncs later',
-    error: 'Sync failed',
-  })[s.kind];
+function unsyncedNote(s: SyncStatus): string | null {
+  switch (s.kind) {
+    case 'off':
+      return 'Backup is off. Your sessions are only on this phone.';
+    case 'offline':
+      return "You're offline. Your latest session backs up when you're back online.";
+    case 'error':
+      return "Your latest session isn't backed up. Open Settings to see why.";
+    default:
+      return null;
+  }
+}
 
-export function HomeScreen({ data, status, onStart, onResume, onDiscard, onSettings }: Props) {
+export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscard, onSettings }: Props) {
   const suggested = nextPlan(data);
   const [chosen, setChosen] = useState<PlanId | null>(null);
   const plan = chosen ?? suggested;
   const other: PlanId = plan === 'A' ? 'B' : 'A';
   const active = activeSession(data);
-  const last = finishedSessions(data).at(-1);
+  const note = unsynced ? unsyncedNote(status) : null;
   const ids = plans[plan].exercises;
   const totalSets = ids.reduce((n, id) => n + exercises[id].sets, 0);
 
@@ -98,12 +103,11 @@ export function HomeScreen({ data, status, onStart, onResume, onDiscard, onSetti
         )}
       </div>
 
-      <button className="card" onClick={onSettings} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
-        <span className="muted">{last ? `Last: Plan ${last.plan}, ${shortDate(last.date)}` : 'No sessions yet'}</span>
-        <span style={{ fontSize: 13, color: status.kind === 'error' ? 'var(--clay-text)' : status.kind === 'synced' ? 'var(--sage)' : 'var(--stone)' }}>
-          ● {statusText(status)}
-        </span>
-      </button>
+      {note && (
+        <p className="muted" role="status" style={{ margin: 0, padding: '0 4px', color: status.kind === 'error' ? 'var(--clay-text)' : undefined }}>
+          {note}
+        </p>
+      )}
       {active ? (
         <button className="btn-primary" onClick={onResume}>Resume Plan {active.plan}</button>
       ) : (

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { finishedSessions } from '../domain/schedule';
 import type { AppData } from '../domain/types';
+import { shortDate } from './format';
 import type { SyncConfig } from '../storage/sync';
 import type { SyncStatus } from './useStore';
 
@@ -9,7 +11,6 @@ interface Props {
   status: SyncStatus;
   onSave: (c: SyncConfig | null) => void;
   onSyncNow: () => void;
-  onScreenCheck: () => void;
   onClose: () => void;
 }
 
@@ -22,7 +23,7 @@ function exportBackup(data: AppData) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-export function SettingsSheet({ data, config, status, onSave, onSyncNow, onScreenCheck, onClose }: Props) {
+export function SettingsSheet({ data, config, status, onSave, onSyncNow, onClose }: Props) {
   const [owner, setOwner] = useState(config?.owner ?? '');
   const [repo, setRepo] = useState(config?.repo ?? 'plus-one-data');
   const [token, setToken] = useState('');
@@ -45,7 +46,10 @@ export function SettingsSheet({ data, config, status, onSave, onSyncNow, onScree
           ? "You're offline. Your sessions are safe on this phone and sync when you're back online."
           : status.kind === 'syncing'
             ? 'Syncing…'
-            : 'Backup is off. Sessions are only on this device.';
+            : status.kind === 'idle'
+              ? ''
+              : 'Backup is off. Sessions are only on this device.';
+  const last = finishedSessions(data).at(-1);
 
   return (
     <div className="sheet-backdrop" onClick={onClose}>
@@ -78,6 +82,9 @@ export function SettingsSheet({ data, config, status, onSave, onSyncNow, onScree
         </label>
         {error && <p style={{ margin: 0, fontSize: 13, color: 'var(--clay-text)' }}>{error}</p>}
         <p className="muted" style={{ margin: 0, color: status.kind === 'error' ? 'var(--clay-text)' : undefined }}>{statusLine}</p>
+        <p className="muted" style={{ margin: 0 }}>
+          {last ? `Last session: Plan ${last.plan}, ${shortDate(last.date)}` : 'No sessions yet'}
+        </p>
         <button className="btn-primary" onClick={save}>Save and sync</button>
         {config && (
           <div style={{ display: 'flex', gap: 8 }}>
@@ -86,7 +93,6 @@ export function SettingsSheet({ data, config, status, onSave, onSyncNow, onScree
           </div>
         )}
         <button className="btn-secondary" onClick={() => exportBackup(data)}>Export backup file</button>
-        <button className="btn-text" onClick={onScreenCheck}>Check screen size</button>
       </div>
     </div>
   );

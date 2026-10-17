@@ -5,6 +5,7 @@ import type { SyncConfig } from './sync';
 
 const DATA_KEY = 'plus-one:data';
 const SYNC_KEY = 'plus-one:sync';
+const SYNCED_AT_KEY = 'plus-one:syncedAt';
 
 export async function loadData(): Promise<AppData> {
   const raw = await get(DATA_KEY);
@@ -18,6 +19,10 @@ export async function loadSyncConfig(): Promise<SyncConfig | null> {
 }
 
 export const saveSyncConfig = (config: SyncConfig | null) => set(SYNC_KEY, config);
+
+export const loadSyncedAt = async () => (await get<string>(SYNCED_AT_KEY)) ?? null;
+
+export const saveSyncedAt = (iso: string) => set(SYNCED_AT_KEY, iso);
 
 export async function requestPersistence() {
   try {

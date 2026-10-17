@@ -4,7 +4,15 @@ import { nextDown, nextUp } from '../domain/ladder';
 import { mergeData } from '../domain/merge';
 import type { AppData, Load, Session } from '../domain/types';
 import { emptyData } from '../domain/types';
-import { loadData, loadSyncConfig, requestPersistence, saveData, saveSyncConfig } from '../storage/local';
+import {
+  loadData,
+  loadSyncConfig,
+  loadSyncedAt,
+  requestPersistence,
+  saveData,
+  saveSyncConfig,
+  saveSyncedAt,
+} from '../storage/local';
 import { sync, type SyncConfig } from '../storage/sync';
 
 type Action =
@@ -67,6 +75,7 @@ function reducer(state: State, action: Action): State {
 }
 
 export type SyncStatus =
+  | { kind: 'idle' }
   | { kind: 'off' }
   | { kind: 'syncing' }
   | { kind: 'synced'; at: Date }
@@ -76,7 +85,8 @@ export type SyncStatus =
 export function useStore() {
   const [state, dispatch] = useReducer(reducer, { loaded: false, data: emptyData });
   const [config, setConfig] = useState<SyncConfig | null>(null);
-  const [status, setStatus] = useState<SyncStatus>({ kind: 'off' });
+  const [status, setStatus] = useState<SyncStatus>({ kind: 'idle' });
+  const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const [syncTick, setSyncTick] = useState(0);
   const dataRef = useRef(state.data);
   dataRef.current = state.data;
@@ -98,8 +108,11 @@ export function useStore() {
     inFlight.current = true;
     setStatus({ kind: 'syncing' });
     try {
+      const startedAt = new Date().toISOString();
       dispatch({ type: 'synced', data: await sync(c, dataRef.current) });
       setStatus({ kind: 'synced', at: new Date() });
+      setSyncedAt(startedAt);
+      void saveSyncedAt(startedAt);
     } catch (e) {
       setStatus(navigator.onLine ? { kind: 'error', message: (e as Error).message } : { kind: 'offline' });
     } finally {
@@ -118,8 +131,9 @@ export function useStore() {
   useEffect(() => {
     void (async () => {
       void requestPersistence();
-      const [data, c] = await Promise.all([loadData(), loadSyncConfig()]);
+      const [data, c, at] = await Promise.all([loadData(), loadSyncConfig(), loadSyncedAt()]);
       setConfig(c);
+      setSyncedAt(at);
       dispatch({ type: 'loaded', data });
       requestSync();
     })();
@@ -148,5 +162,7 @@ export function useStore() {
     [requestSync],
   );
 
-  return { ...state, dispatch, config, updateConfig, status, requestSync, closeSession };
+  const unsynced = state.data.sessions.some((s) => s.status === 'finished' && (!syncedAt || s.updatedAt > syncedAt));
+
+  return { ...state, dispatch, config, updateConfig, status, unsynced, requestSync, closeSession };
 }
