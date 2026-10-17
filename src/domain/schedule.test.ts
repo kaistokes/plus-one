@@ -22,6 +22,13 @@ describe('schedule', () => {
     expect(nextPlan(data)).toBe('B');
   });
 
+  it('keeps the A then B order across rest days of any length', () => {
+    const a = finish(startSession(emptyData, 'A', day(1), 'a'), 8);
+    const b = finish(startSession({ version: 1, sessions: [a] }, 'B', day(9), 'b'), 8);
+    expect(nextPlan({ version: 1, sessions: [a] })).toBe('B');
+    expect(nextPlan({ version: 1, sessions: [a, b] })).toBe('A');
+  });
+
   it('ignores active and discarded sessions when picking the next plan', () => {
     const a = finish(startSession(emptyData, 'A', day(1), 'a'), 8);
     const active = startSession(emptyData, 'B', day(3), 'b');
