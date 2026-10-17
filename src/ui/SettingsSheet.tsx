@@ -24,13 +24,15 @@ function exportBackup(data: AppData) {
 export function SettingsSheet({ data, config, status, onSave, onSyncNow, onClose }: Props) {
   const [owner, setOwner] = useState(config?.owner ?? '');
   const [repo, setRepo] = useState(config?.repo ?? 'plus-one-data');
-  const [token, setToken] = useState(config?.token ?? '');
+  const [token, setToken] = useState('');
   const [error, setError] = useState('');
 
   const save = () => {
-    if (!owner.trim() || !repo.trim() || !token.trim()) return setError('Fill in all three fields first.');
+    const nextToken = token.replace(/\s/g, '') || config?.token;
+    if (!owner.trim() || !repo.trim() || !nextToken) return setError('Fill in all three fields first.');
     setError('');
-    onSave({ owner: owner.trim(), repo: repo.trim(), path: 'log.json', token: token.trim() });
+    setToken('');
+    onSave({ owner: owner.trim(), repo: repo.trim(), path: 'log.json', token: nextToken });
   };
 
   const statusLine =
@@ -65,7 +67,13 @@ export function SettingsSheet({ data, config, status, onSave, onSyncNow, onClose
         </label>
         <label className="field">
           Fine-grained token
-          <input type="password" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" placeholder="github_pat_…" />
+          <input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            autoComplete="off"
+            placeholder={config ? `Saved, ends in ${config.token.slice(-4)}. Paste to replace.` : 'github_pat_…'}
+          />
         </label>
         {error && <p style={{ margin: 0, fontSize: 13, color: 'var(--clay-text)' }}>{error}</p>}
         <p className="muted" style={{ margin: 0, color: status.kind === 'error' ? 'var(--clay-text)' : undefined }}>{statusLine}</p>
