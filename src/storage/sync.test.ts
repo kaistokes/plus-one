@@ -13,9 +13,10 @@ function fakeGitHub(initial: AppData | null, conflictsBeforeSuccess = 0) {
   let file = initial ? { content: toBase64(JSON.stringify(initial)), sha: 'sha0' } : null;
   let conflicts = conflictsBeforeSuccess;
   const calls: string[] = [];
-  const f = (async (_url: string, init?: RequestInit) => {
+  const f = (async (url: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET';
     calls.push(method);
+    if (method === 'GET' && !url.endsWith('/log.json')) return Response.json({});
     if (method === 'GET') {
       return file ? Response.json(file) : new Response('', { status: 404 });
     }
@@ -36,7 +37,12 @@ describe('sync', () => {
     const gh = fakeGitHub(null);
     const merged = await sync(config, one('a', 1), gh.f);
     expect(gh.remote()).toEqual(merged);
-    expect(gh.calls).toEqual(['GET', 'PUT']);
+    expect(gh.calls).toEqual(['GET', 'GET', 'PUT']);
+  });
+
+  it('blames the token when the repo itself is invisible to it', async () => {
+    const f = (async () => new Response('', { status: 404 })) as unknown as typeof fetch;
+    await expect(sync(config, one('a', 1), f)).rejects.toThrow("The token can't see me/plus-one-data");
   });
 
   it('merges remote sessions in and pushes the union', async () => {

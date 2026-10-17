@@ -22,8 +22,11 @@ export class SyncError extends Error {
   }
 }
 
+const repoUrl = (c: SyncConfig) =>
+  `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`;
+
 const url = (c: SyncConfig) =>
-  `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.path
+  `${repoUrl(c)}/contents/${c.path
     .split('/')
     .map(encodeURIComponent)
     .join('/')}`;
@@ -47,8 +50,12 @@ export function fromBase64(b64: string): string {
 
 async function pull(c: SyncConfig, f: Fetch): Promise<{ data: AppData; sha: string } | null> {
   const res = await f(url(c), { headers: headers(c), cache: 'no-store' });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new SyncError(describe(res.status), res.status);
+  if (res.status === 404) {
+    const repo = await f(repoUrl(c), { headers: headers(c), cache: 'no-store' });
+    if (repo.ok) return null;
+    throw new SyncError(describe(repo.status, c), repo.status);
+  }
+  if (!res.ok) throw new SyncError(describe(res.status, c), res.status);
   const body = (await res.json()) as { content: string; sha: string };
   return { data: parseAppData(JSON.parse(fromBase64(body.content))), sha: body.sha };
 }
@@ -64,14 +71,16 @@ async function push(c: SyncConfig, data: AppData, sha: string | undefined, f: Fe
     }),
   });
   if (res.status === 409) return false;
-  if (!res.ok) throw new SyncError(describe(res.status), res.status);
+  if (!res.ok) throw new SyncError(describe(res.status, c), res.status);
   return true;
 }
 
-function describe(status: number): string {
-  if (status === 401) return 'GitHub rejected the token. Check it in Settings.';
-  if (status === 403) return "The token can't write to that repo. Check its permissions.";
-  if (status === 404) return "Couldn't find that repo. Check the owner and name.";
+function describe(status: number, c: SyncConfig): string {
+  const name = `${c.owner}/${c.repo}`;
+  if (status === 401) return 'GitHub rejected the token. It may have expired or been pasted incompletely.';
+  if (status === 403) return `The token can read ${name} but not save to it. Set Contents to Read and write on GitHub.`;
+  if (status === 404)
+    return `The token can't see ${name}. On GitHub, edit the token so its repository access includes ${c.repo}, or check the spelling here.`;
   return `GitHub returned ${status}. Try again later.`;
 }
 
