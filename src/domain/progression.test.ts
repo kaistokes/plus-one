@@ -32,6 +32,7 @@ describe('ladders', () => {
     expect(nextDown(pushdown, 21.25)).toBe(17.5);
     expect(nextUp(raise, 25)).toBe(32);
     expect(nextUp(raise, 32)).toBe(39);
+    expect(exercises['machine-preacher-curl'].weights).toBe(raise);
   });
 });
 

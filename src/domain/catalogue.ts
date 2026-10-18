@@ -7,7 +7,7 @@ const pushdownStack: WeightLadder = {
   kind: 'list',
   values: [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 21.25, 25, 28.75, 32.5, 36.25, 40, 43.75, 47.5],
 };
-const lateralRaiseStack: WeightLadder = {
+const selectStack: WeightLadder = {
   kind: 'list',
   values: [5, 10, 15, 20, 25, 32, 39, 46, 53, 60, 67, 74, 81, 88, 95],
 };
@@ -93,7 +93,7 @@ export const exercises: Record<ExerciseId, Exercise> = {
     sets: 2,
     repRange: reps,
     unit: 'kg stack',
-    weights: lateralRaiseStack,
+    weights: selectStack,
     startWeight: 10,
   },
   'machine-preacher-curl': {
@@ -102,7 +102,7 @@ export const exercises: Record<ExerciseId, Exercise> = {
     sets: 2,
     repRange: reps,
     unit: 'kg stack',
-    weights: plates,
+    weights: selectStack,
     startWeight: 10,
   },
 };
