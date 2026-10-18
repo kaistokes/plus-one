@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { activeSession, startSession } from '../domain/schedule';
+import { activeSession, newEntry, startSession } from '../domain/schedule';
+import { CalendarSheet } from './CalendarSheet';
 import { HomeScreen } from './HomeScreen';
 import { SettingsSheet } from './SettingsSheet';
 import { useStore } from './useStore';
@@ -9,6 +10,7 @@ export function App() {
   const store = useStore();
   const [inWorkout, setInWorkout] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   if (!store.loaded) return null;
 
   const active = activeSession(store.data);
@@ -22,6 +24,9 @@ export function App() {
           onSet={(entry, set, actual) => store.dispatch({ type: 'setActual', sessionId: active.id, entry, set, actual })}
           onStep={(entry, set, field, dir, fallback) =>
             store.dispatch({ type: 'step', sessionId: active.id, entry, set, field, dir, fallback })
+          }
+          onSwap={(entry, exercise) =>
+            store.dispatch({ type: 'swap', sessionId: active.id, entry, replacement: newEntry(store.data, exercise) })
           }
           onFinish={() => {
             store.closeSession(active.id, 'finished');
@@ -43,8 +48,10 @@ export function App() {
             if (confirm('Discard this session? Its sets won’t count.')) store.closeSession(id, 'discarded');
           }}
           onSettings={() => setSettingsOpen(true)}
+          onCalendar={() => setCalendarOpen(true)}
         />
       )}
+      {calendarOpen && <CalendarSheet data={store.data} onClose={() => setCalendarOpen(false)} />}
       {settingsOpen && (
         <SettingsSheet
           data={store.data}

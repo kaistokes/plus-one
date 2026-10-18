@@ -25,7 +25,6 @@ export interface Load {
 export interface Exercise {
   id: ExerciseId;
   name: string;
-  equipment: string;
   sets: number;
   repRange: { min: number; max: number };
   unit: LoadUnit;

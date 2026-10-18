@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { exerciseHistory, nextPlan, startSession } from './schedule';
+import { alternativeOf } from './catalogue';
+import { exerciseHistory, newEntry, nextPlan, startSession } from './schedule';
 import type { AppData, Session } from './types';
 import { emptyData } from './types';
 
@@ -48,6 +49,22 @@ describe('schedule', () => {
     const bench = b.entries.find((e) => e.exercise === 'bench-press');
     expect(bench?.sets.every((s) => s.target === null)).toBe(true);
     expect(exerciseHistory(afterA, 'cable-pushdown')).toHaveLength(1);
+  });
+
+  it('swaps a busy station for its pair and back, keeping each history separate', () => {
+    expect(alternativeOf('bench-press')).toBe('incline-press');
+    expect(alternativeOf('incline-press')).toBe('bench-press');
+    expect(alternativeOf('high-row')).toBe('lat-pulldown');
+    expect(alternativeOf('machine-preacher-curl')).toBe('db-curl');
+    expect(alternativeOf('db-lateral-raise')).toBe('machine-lateral-raise');
+    expect(alternativeOf('cable-pushdown')).toBeUndefined();
+    const a = finish(startSession(emptyData, 'A', day(1), 'a'), 6);
+    const swapped = newEntry({ version: 1, sessions: [a] }, 'incline-press');
+    expect(swapped.sets.map((s) => s.target)).toEqual([
+      { weight: 20, reps: 7 },
+      { weight: 20, reps: 7 },
+      { weight: 20, reps: 7 },
+    ]);
   });
 
   it('records the local calendar date for the future streak counter', () => {

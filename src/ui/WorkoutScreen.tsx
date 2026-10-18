@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { exercises } from '../domain/catalogue';
+import { alternativeOf, exercises } from '../domain/catalogue';
 import { exerciseHistory, targetsFor } from '../domain/schedule';
-import type { AppData, Load, Session } from '../domain/types';
+import type { AppData, ExerciseId, Load, Session } from '../domain/types';
 import { Illustration } from '../illustrations';
 import { coachLine } from './format';
 import { Icon } from './icons';
@@ -12,6 +12,7 @@ interface Props {
   session: Session;
   onSet: (entry: number, set: number, actual: Load | null) => void;
   onStep: (entry: number, set: number, field: 'weight' | 'reps', dir: 1 | -1, fallback: Load) => void;
+  onSwap: (entry: number, exercise: ExerciseId) => void;
   onFinish: () => void;
   onLeave: () => void;
 }
@@ -33,7 +34,7 @@ function useWakeLock() {
   }, []);
 }
 
-export function WorkoutScreen({ data, session, onSet, onStep, onFinish, onLeave }: Props) {
+export function WorkoutScreen({ data, session, onSet, onStep, onSwap, onFinish, onLeave }: Props) {
   useWakeLock();
   const firstOpen = Math.max(0, session.entries.findIndex((e) => e.sets.some((s) => !s.actual)));
   const [page, setPage] = useState(firstOpen);
@@ -43,6 +44,8 @@ export function WorkoutScreen({ data, session, onSet, onStep, onFinish, onLeave 
   const exercise = exercises[entry.exercise];
   const targets = targetsFor(data, entry.exercise);
   const last = exerciseHistory(data, entry.exercise).at(-1);
+  const coach = coachLine(exercise.id, targets, last);
+  const alternative = alternativeOf(exercise.id);
   const isLast = page === session.entries.length - 1;
   const go = (p: number) => {
     setPage(p);
@@ -91,10 +94,24 @@ export function WorkoutScreen({ data, session, onSet, onStep, onFinish, onLeave 
         </div>
         <div style={{ padding: '0 4px' }}>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>{exercise.name}</h1>
-          <p className="muted" style={{ margin: '2px 0 0' }}>{exercise.equipment}</p>
-          <p style={{ margin: '8px 0 0', fontSize: 14, lineHeight: 1.45, color: 'var(--stone)' }}>
-            {coachLine(exercise.id, targets, last)}
-          </p>
+          {coach && (
+            <p style={{ margin: '8px 0 0', fontSize: 14, lineHeight: 1.45, color: 'var(--stone)' }}>{coach}</p>
+          )}
+          {alternative && (
+            <button
+              className="btn-text"
+              style={{ padding: '8px 0' }}
+              onClick={() => {
+                const logged = entry.sets.some((s) => s.actual);
+                if (!logged || confirm(`Swap to ${exercises[alternative].name}? Sets logged here will be cleared.`)) {
+                  onSwap(page, alternative);
+                  setEditing(null);
+                }
+              }}
+            >
+              Taken? Swap to {exercises[alternative].name}
+            </button>
+          )}
         </div>
         <div className="set-grid muted" style={{ padding: '0 8px 0 14px' }}>
           <span>Set</span>

@@ -25,11 +25,9 @@ export function targetSummary(t: Targets): { sets: string; weight: string; mark:
   };
 }
 
-export function coachLine(id: ExerciseId, t: Targets, last: Load[] | undefined): string {
+export function coachLine(id: ExerciseId, t: Targets, last: Load[] | undefined): string | null {
   const { repRange, weights } = exercises[id];
-  if (t.reason === 'baseline' || !last) {
-    return `First time on this one. Pick a weight you can lift ${repRange.min} to ${repRange.max} times close to failure, then log what you did.`;
-  }
+  if (t.reason === 'baseline' || !last) return null;
   const prev = `Last time ${describeSets(last)}.`;
   const w = t.sets[0]?.weight ?? 0;
   switch (t.reason) {

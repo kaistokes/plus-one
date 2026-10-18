@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { exercises, plans } from '../domain/catalogue';
-import { activeSession, nextPlan, targetsFor } from '../domain/schedule';
+import { activeSession, localDate, nextPlan, targetsFor } from '../domain/schedule';
+import { currentStreak } from '../domain/streak';
 import type { AppData, PlanId } from '../domain/types';
 import { longDate, targetSummary } from './format';
 import { Icon } from './icons';
@@ -14,6 +15,7 @@ interface Props {
   onResume: () => void;
   onDiscard: (id: string) => void;
   onSettings: () => void;
+  onCalendar: () => void;
 }
 
 function unsyncedNote(s: SyncStatus): string | null {
@@ -29,12 +31,13 @@ function unsyncedNote(s: SyncStatus): string | null {
   }
 }
 
-export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscard, onSettings }: Props) {
+export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscard, onSettings, onCalendar }: Props) {
   const suggested = nextPlan(data);
   const [chosen, setChosen] = useState<PlanId | null>(null);
   const plan = chosen ?? suggested;
   const other: PlanId = plan === 'A' ? 'B' : 'A';
   const active = activeSession(data);
+  const streak = currentStreak(data, localDate(new Date()));
   const note = unsynced ? unsyncedNote(status) : null;
   const ids = plans[plan].exercises;
   const totalSets = ids.reduce((n, id) => n + exercises[id].sets, 0);
@@ -43,12 +46,20 @@ export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscar
     <main className="screen">
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0 4px' }}>
         <div>
-          <p className="muted" style={{ margin: 0 }}>{longDate(new Date())}</p>
+          <p className="muted" style={{ margin: 0 }}>
+            {longDate(new Date())}
+            {streak > 0 && <> · <span style={{ color: 'var(--cream)' }}>{streak} day streak</span></>}
+          </p>
           <h1 className="title">{active ? 'In progress' : 'Next up'}</h1>
         </div>
-        <button className="icon-btn" onClick={onSettings} aria-label="Settings">
-          <Icon name="settings" />
-        </button>
+        <div style={{ display: 'flex' }}>
+          <button className="icon-btn" onClick={onCalendar} aria-label="Calendar">
+            <Icon name="calendar" />
+          </button>
+          <button className="icon-btn" onClick={onSettings} aria-label="Settings">
+            <Icon name="settings" />
+          </button>
+        </div>
       </header>
 
       <div className="scroll">

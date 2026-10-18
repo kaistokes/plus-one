@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { exercises } from '../domain/catalogue';
 import { nextDown, nextUp } from '../domain/ladder';
 import { mergeData } from '../domain/merge';
-import type { AppData, Load, Session } from '../domain/types';
+import type { AppData, Entry, Load, Session } from '../domain/types';
 import { emptyData } from '../domain/types';
 import {
   loadData,
@@ -20,6 +20,7 @@ type Action =
   | { type: 'start'; session: Session }
   | { type: 'setActual'; sessionId: string; entry: number; set: number; actual: Load | null }
   | { type: 'step'; sessionId: string; entry: number; set: number; field: 'weight' | 'reps'; dir: 1 | -1; fallback: Load }
+  | { type: 'swap'; sessionId: string; entry: number; replacement: Entry }
   | { type: 'close'; sessionId: string; status: 'finished' | 'discarded' }
   | { type: 'synced'; data: AppData };
 
@@ -66,6 +67,14 @@ function reducer(state: State, action: Action): State {
           const { weights } = exercises[id];
           return { ...base, weight: action.dir > 0 ? nextUp(weights, base.weight) : nextDown(weights, base.weight) };
         }),
+      };
+    case 'swap':
+      return {
+        ...state,
+        data: updateSession(state.data, action.sessionId, (s) => ({
+          ...s,
+          entries: s.entries.map((e, i) => (i === action.entry ? action.replacement : e)),
+        })),
       };
     case 'close':
       return { ...state, data: updateSession(state.data, action.sessionId, (s) => ({ ...s, status: action.status })) };

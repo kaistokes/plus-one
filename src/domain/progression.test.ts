@@ -24,6 +24,15 @@ describe('ladders', () => {
     expect(nextDown(dbRaise.weights, 12.5)).toBe(10);
     expect(nextDown(dbRaise.weights, 1)).toBe(1);
   });
+
+  it('follows the real weight stacks on the pushdown and lateral raise machine', () => {
+    const pushdown = exercises['cable-pushdown'].weights;
+    const raise = exercises['machine-lateral-raise'].weights;
+    expect(nextUp(pushdown, 17.5)).toBe(21.25);
+    expect(nextDown(pushdown, 21.25)).toBe(17.5);
+    expect(nextUp(raise, 25)).toBe(32);
+    expect(nextUp(raise, 32)).toBe(39);
+  });
 });
 
 describe('nextTargets', () => {

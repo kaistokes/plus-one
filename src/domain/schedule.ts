@@ -1,6 +1,6 @@
 import { exercises, plans } from './catalogue';
 import { nextTargets, type Targets } from './progression';
-import type { AppData, ExerciseId, Load, PlanId, Session } from './types';
+import type { AppData, Entry, ExerciseId, Load, PlanId, Session } from './types';
 
 const byStart = (a: Session, b: Session) => a.startedAt.localeCompare(b.startedAt);
 
@@ -34,16 +34,18 @@ export function startSession(data: AppData, plan: PlanId, now: Date, id: string)
     startedAt: iso,
     updatedAt: iso,
     status: 'active',
-    entries: plans[plan].exercises.map((exercise) => {
-      const targets = targetsFor(data, exercise);
-      return {
-        exercise,
-        sets: Array.from({ length: exercises[exercise].sets }, (_, i) => ({
-          target: targets.reason === 'baseline' ? null : (targets.sets[i] ?? null),
-          actual: null,
-        })),
-      };
-    }),
+    entries: plans[plan].exercises.map((exercise) => newEntry(data, exercise)),
+  };
+}
+
+export function newEntry(data: AppData, exercise: ExerciseId): Entry {
+  const targets = targetsFor(data, exercise);
+  return {
+    exercise,
+    sets: Array.from({ length: exercises[exercise].sets }, (_, i) => ({
+      target: targets.reason === 'baseline' ? null : (targets.sets[i] ?? null),
+      actual: null,
+    })),
   };
 }
 
