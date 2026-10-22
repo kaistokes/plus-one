@@ -80,6 +80,11 @@ describe('nextTargets', () => {
     expect(t).toEqual({ reason: 'reps', sets: sets([40, 8], [40, 8], [40, 6]) });
   });
 
+  it('puts the strongest set first after ramping up through a calibration', () => {
+    const t = nextTargets(exercises['cable-pushdown'], [sets([15, 8], [17.5, 8])]);
+    expect(t).toEqual({ reason: 'reps', sets: sets([17.5, 8], [17.5, 3]) });
+  });
+
   it('fills a skipped set from the last completed one', () => {
     const t = nextTargets(bench, [sets([60, 6], [60, 5])]);
     expect(t).toEqual({ reason: 'reps', sets: sets([60, 7], [60, 6], [60, 6]) });

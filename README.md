@@ -49,7 +49,7 @@ Syncing merges sessions by ID, so syncing twice or after a session logged offlin
 
 ## Changing equipment steps
 
-Weights move along a ladder per exercise in [src/domain/catalogue.ts](src/domain/catalogue.ts). Plates step by 2.5 kg per side, the bench bar by 5 kg, the lat pulldown stack by 5 kg and the cable stack by 2.5 kg. Dumbbells go up 1 kg at a time to 10 kg, then by `DUMBBELL_ABOVE_10_STEP` (2.5 kg). The weight you log always wins over the suggestion.
+Weights move along a ladder per exercise in [src/domain/catalogue.ts](src/domain/catalogue.ts). Plates step by 2.5 kg per side, the bench bar by 5 kg and the lat pulldown stack by 5 kg. The pushdown stack goes up 2.5 kg at a time to 17.5 kg, then 3.75 kg (21.25, 25, 28.75 and so on). The lateral raise and preacher curl machines follow their Select stack. Dumbbells go up 1 kg at a time to 10 kg, then by `DUMBBELL_ABOVE_10_STEP` (2.5 kg). The weight you log always wins over the suggestion.
 
 ## Development
 

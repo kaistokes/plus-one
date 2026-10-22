@@ -17,7 +17,7 @@ export function repsAt(oneRepMax: number, weight: number): number {
   return Math.max(1, Math.floor(30 * (oneRepMax / weight - 1) + EPS));
 }
 
-function workingWeight(sets: Load[]): number {
+export function workingWeight(sets: Load[]): number {
   const counts = new Map<number, number>();
   for (const s of sets) counts.set(s.weight, (counts.get(s.weight) ?? 0) + 1);
   let best = 0;
@@ -34,7 +34,7 @@ function workingWeight(sets: Load[]): number {
 function repsAtWorkingWeight(sets: Load[], w: number, count: number): number[] {
   const converted = sets.map((s) => (s.weight === w ? s.reps : repsAt(epley(s), w)));
   const last = converted.at(-1) ?? 0;
-  return Array.from({ length: count }, (_, i) => converted[i] ?? last);
+  return Array.from({ length: count }, (_, i) => converted[i] ?? last).sort((a, b) => b - a);
 }
 
 function isStalled(history: Load[][], w: number): boolean {
