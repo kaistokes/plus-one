@@ -402,3 +402,46 @@ input {
   vertical-align: -1px;
   margin-right: 4px;
 }
+
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: var(--steel);
+  border-radius: 10px;
+  padding: 2px;
+  font-size: 13px;
+}
+
+.seg button {
+  padding: 7px 0;
+  border-radius: 8px;
+  color: var(--stone);
+}
+
+.seg button.on {
+  background: var(--line);
+  color: var(--bone);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  background: var(--steel);
+  border-radius: 14px;
+  padding: 10px 12px 12px;
+  min-width: 0;
+}
+
+.tile-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-label {
+  fill: var(--stone);
+  font-size: 11px;
+}

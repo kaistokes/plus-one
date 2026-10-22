@@ -53,3 +53,11 @@ export function localDate(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+export const dayNumber = (date: string) => {
+  const [y, m, d] = date.split('-').map(Number);
+  return Date.UTC(y ?? 0, (m ?? 1) - 1, d ?? 1) / 86_400_000;
+};
+
+export const addDays = (date: string, days: number) =>
+  new Date((dayNumber(date) + days) * 86_400_000).toISOString().slice(0, 10);

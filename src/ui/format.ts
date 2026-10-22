@@ -50,3 +50,6 @@ export const longDate = (d: Date) =>
 
 export const shortDate = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
+export const dayMonth = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });

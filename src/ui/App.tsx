@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { activeSession, newEntry, startSession } from '../domain/schedule';
 import { CalendarSheet } from './CalendarSheet';
 import { HomeScreen } from './HomeScreen';
+import { ProgressSheet } from './ProgressSheet';
 import { SettingsSheet } from './SettingsSheet';
 import { useStore } from './useStore';
 import { WorkoutScreen } from './WorkoutScreen';
@@ -11,6 +12,7 @@ export function App() {
   const [inWorkout, setInWorkout] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
   if (!store.loaded) return null;
 
   const active = activeSession(store.data);
@@ -49,8 +51,10 @@ export function App() {
           }}
           onSettings={() => setSettingsOpen(true)}
           onCalendar={() => setCalendarOpen(true)}
+          onProgress={() => setProgressOpen(true)}
         />
       )}
+      {progressOpen && <ProgressSheet data={store.data} onClose={() => setProgressOpen(false)} />}
       {calendarOpen && <CalendarSheet data={store.data} onClose={() => setCalendarOpen(false)} />}
       {settingsOpen && (
         <SettingsSheet

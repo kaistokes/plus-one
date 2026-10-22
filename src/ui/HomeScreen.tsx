@@ -16,6 +16,7 @@ interface Props {
   onDiscard: (id: string) => void;
   onSettings: () => void;
   onCalendar: () => void;
+  onProgress: () => void;
 }
 
 function unsyncedNote(s: SyncStatus): string | null {
@@ -31,7 +32,7 @@ function unsyncedNote(s: SyncStatus): string | null {
   }
 }
 
-export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscard, onSettings, onCalendar }: Props) {
+export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscard, onSettings, onCalendar, onProgress }: Props) {
   const suggested = nextPlan(data);
   const [chosen, setChosen] = useState<PlanId | null>(null);
   const plan = chosen ?? suggested;
@@ -53,6 +54,9 @@ export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscar
           <h1 className="title">{active ? 'In progress' : 'Next up'}</h1>
         </div>
         <div style={{ display: 'flex' }}>
+          <button className="icon-btn" onClick={onProgress} aria-label="Progress">
+            <Icon name="chart" />
+          </button>
           <button className="icon-btn" onClick={onCalendar} aria-label="Calendar">
             <Icon name="calendar" />
           </button>
