@@ -1,5 +1,5 @@
 import { alternativeOf, plans } from './catalogue';
-import { epley, workingWeight } from './progression';
+import { epley } from './progression';
 import { addDays, finishedSessions } from './schedule';
 import type { AppData, ExerciseId, Load } from './types';
 
@@ -51,7 +51,7 @@ export function timeline(data: AppData, id: ExerciseId): Point[] {
       .filter((e) => e.exercise === id)
       .map((e) => e.sets.flatMap((set) => (set.actual ? [set.actual] : [])))
       .filter((sets) => sets.length > 0)
-      .map((sets) => ({ date: s.date, weight: workingWeight(sets), sets })),
+      .map((sets) => ({ date: s.date, weight: Math.max(...sets.map((x) => x.weight)), sets })),
   );
 }
 

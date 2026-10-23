@@ -1,5 +1,4 @@
 import { exercises } from '../domain/catalogue';
-import { nextUp } from '../domain/ladder';
 import type { Targets } from '../domain/progression';
 import type { ExerciseId, Load, SetLog } from '../domain/types';
 
@@ -12,33 +11,41 @@ export function describeSets(sets: Load[]): string {
   return sets.map((s) => `${kg(s.weight)} × ${s.reps}`).join(', ');
 }
 
-export function targetSummary(t: Targets): { sets: string; weight: string; mark: string } | null {
-  if (t.reason === 'baseline') return null;
-  const first = t.sets[0];
-  if (!first) return null;
-  const reps = t.sets.map((s) => s.reps);
-  const same = reps.every((r) => r === first.reps);
+export interface TargetGroup {
+  reps: string;
+  weight: string;
+}
+
+/** Runs of sets at one weight, e.g. 50 × 7 then 45 × 8, 7 reads as "7 @ 50 · 8, 7 @ 45". */
+export function targetSummary(t: Targets): { groups: TargetGroup[]; mark: string } | null {
+  if (t.reason === 'baseline' || t.sets.length === 0) return null;
+  const runs: Load[][] = [];
+  for (const s of t.sets) {
+    const run = runs.at(-1);
+    if (run && run[0]?.weight === s.weight) run.push(s);
+    else runs.push([s]);
+  }
   return {
-    sets: same ? `${t.sets.length} × ${first.reps}` : reps.join(', '),
-    weight: kg(first.weight),
-    mark: { reps: '+1', overflow: '+1', weight: '↑', deload: '↓' }[t.reason],
+    groups: runs.map((run) => {
+      const reps = run.map((s) => s.reps);
+      const same = run.length > 1 && reps.every((r) => r === reps[0]);
+      return { reps: same ? `${run.length} × ${reps[0]}` : reps.join(', '), weight: kg(run[0]?.weight ?? 0) };
+    }),
+    mark: { reps: '+1', weight: '↑', deload: '↓' }[t.reason],
   };
 }
 
 export function coachLine(id: ExerciseId, t: Targets, last: Load[] | undefined): string | null {
-  const { repRange, weights } = exercises[id];
+  const { repRange } = exercises[id];
   if (t.reason === 'baseline' || !last) return null;
   const prev = `Last time ${describeSets(last)}.`;
-  const w = t.sets[0]?.weight ?? 0;
   switch (t.reason) {
     case 'reps':
-      return `${prev} Hit ${repRange.max} on every set and the weight goes up.`;
-    case 'overflow':
-      return `${prev} Keep adding reps. ${kg(nextUp(weights, w))} isn't a safe jump yet.`;
+      return `${prev} Hit ${repRange.max} on a set and that set's weight goes up.`;
     case 'weight':
-      return `${prev} You hit ${repRange.max} on every set, so the weight goes up.`;
+      return `${prev} You hit ${repRange.max}, so the weight goes up.`;
     case 'deload':
-      return `${prev} Three sessions without progress. Drop to ${kg(w)} and build back up.`;
+      return `${prev} Three sessions without progress. Drop about 10% and build back up.`;
   }
 }
 

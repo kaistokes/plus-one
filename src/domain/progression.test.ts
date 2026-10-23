@@ -41,10 +41,16 @@ describe('nextTargets', () => {
     expect(nextTargets(incline, [])).toEqual({ reason: 'baseline' });
   });
 
-  it('adds a rep to every set below the top of the range', () => {
+  it('gives each set its own weight, heaviest first', () => {
+    const t = { reason: 'reps', sets: sets([50, 7], [45, 8], [45, 7]) };
+    expect(nextTargets(incline, [sets([50, 6], [45, 7], [45, 6])])).toEqual(t);
+    expect(nextTargets(incline, [sets([45, 6], [50, 6], [45, 7])])).toEqual(t);
+  });
+
+  it('moves only the sets that hit 8 up a step', () => {
     expect(nextTargets(incline, [sets([40, 8], [40, 7], [40, 6])])).toEqual({
-      reason: 'reps',
-      sets: sets([40, 8], [40, 8], [40, 7]),
+      reason: 'weight',
+      sets: sets([42.5, 5], [40, 8], [40, 7]),
     });
   });
 
@@ -55,11 +61,17 @@ describe('nextTargets', () => {
     });
   });
 
-  it('keeps adding reps on 9 kg dumbbells until 10 kg is safe', () => {
-    const first = nextTargets(dbRaise, [sets([9, 8], [9, 8])]);
-    expect(first).toEqual({ reason: 'overflow', sets: sets([9, 9], [9, 9]) });
-    const second = nextTargets(dbRaise, [sets([9, 8], [9, 8]), sets([9, 9], [9, 9])]);
-    expect(second).toEqual({ reason: 'weight', sets: sets([10, 5], [10, 5]) });
+  it('never asks for more than 8 reps', () => {
+    const t = nextTargets(incline, [sets([45, 10], [45, 9], [45, 8])]);
+    expect(t).toEqual({ reason: 'weight', sets: sets([47.5, 7], [47.5, 6], [47.5, 6]) });
+  });
+
+  it('asks for 5 reps after a jump bigger than the estimate allows', () => {
+    expect(nextTargets(dbRaise, [sets([9, 8], [9, 8])])).toEqual({ reason: 'weight', sets: sets([10, 5], [10, 5]) });
+    expect(nextTargets(exercises['cable-pushdown'], [sets([15, 8], [17.5, 8])])).toEqual({
+      reason: 'weight',
+      sets: sets([21.25, 5], [17.5, 5]),
+    });
   });
 
   it('deloads about 10% after three sessions at one weight without progress', () => {
@@ -75,17 +87,7 @@ describe('nextTargets', () => {
     expect(t.reason).toBe('reps');
   });
 
-  it('converts a lighter drop set to reps at the working weight', () => {
-    const t = nextTargets(incline, [sets([40, 8], [40, 7], [37.5, 8])]);
-    expect(t).toEqual({ reason: 'reps', sets: sets([40, 8], [40, 8], [40, 6]) });
-  });
-
-  it('puts the strongest set first after ramping up through a calibration', () => {
-    const t = nextTargets(exercises['cable-pushdown'], [sets([15, 8], [17.5, 8])]);
-    expect(t).toEqual({ reason: 'reps', sets: sets([17.5, 8], [17.5, 3]) });
-  });
-
-  it('fills a skipped set from the last completed one', () => {
+  it('fills a skipped set from the lightest completed one', () => {
     const t = nextTargets(bench, [sets([60, 6], [60, 5])]);
     expect(t).toEqual({ reason: 'reps', sets: sets([60, 7], [60, 6], [60, 6]) });
   });

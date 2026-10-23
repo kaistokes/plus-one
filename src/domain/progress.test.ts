@@ -22,7 +22,7 @@ describe('progress', () => {
     expect([...progressOrder].sort()).toEqual(Object.keys(exercises).sort());
   });
 
-  it('plots the working weight of each finished session', () => {
+  it('plots the heaviest set of each finished session', () => {
     const data: AppData = {
       version: 1,
       sessions: [

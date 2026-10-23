@@ -96,7 +96,12 @@ export function HomeScreen({ data, status, unsynced, onStart, onResume, onDiscar
                     <span>{exercises[id].name}</span>
                     {t ? (
                       <span className="num" style={{ whiteSpace: 'nowrap' }}>
-                        {t.sets} <span style={{ color: 'var(--stone)', fontWeight: 400 }}>@ {t.weight}</span>{' '}
+                        {t.groups.map((g, i) => (
+                          <span key={i}>
+                            {i > 0 && <span style={{ color: 'var(--stone)' }}> · </span>}
+                            {g.reps} <span style={{ color: 'var(--stone)', fontWeight: 400 }}>@ {g.weight}</span>
+                          </span>
+                        ))}{' '}
                         <span className="mark">{t.mark}</span>
                       </span>
                     ) : (

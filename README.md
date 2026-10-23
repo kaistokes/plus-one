@@ -4,13 +4,12 @@ A progressive overload tracker for an iPhone, built as an installable web app. I
 
 ## How the targets work
 
-Every exercise uses a 5 to 8 rep range (double progression).
+Every exercise uses a 5 to 8 rep range (double progression). Each set has its own target, and the heaviest set always comes first, when you have the most energy.
 
 1. **First session.** Log what you can lift close to failure. This calibrates everything after it.
-2. **Below 8 on some sets.** Those sets get one more rep next time, at the same weight.
-3. **8 on every set.** The weight goes up one step. The new rep target is estimated with the Epley formula, for example 40 × 8 becomes 42.5 × 5.
-4. **Jump too big.** If the next step would put you under 5 reps, you keep adding reps past 8 until the jump is safe. This mostly matters for light dumbbells and machines.
-5. **Stuck.** Three sessions at one weight without more total reps drops the weight about 10% so you can build back up.
+2. **Below 8 on a set.** That set gets one more rep next time, at the same weight.
+3. **8 on a set.** That set's weight goes up one step. The new rep target is estimated with the Epley formula, for example 40 × 8 becomes 42.5 × 5. A target never goes above 8 or below 5 reps, so after a big jump on a machine stack it asks for 5 and you build up from what you manage.
+4. **Stuck.** Three sessions at the same weights without more total reps drops every set about 10% so you can build back up.
 
 Tick a set when you hit the target. If you didn't, tap the weight or reps and use the plus and minus buttons to log what you actually did. A set below target turns clay coloured.
 

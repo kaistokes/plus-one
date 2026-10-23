@@ -12,7 +12,7 @@ const MINI = { w: 120, h: 34, l: 3, r: 3, t: 4, b: 4 };
 const FULL = { w: 320, h: 170, l: 2, r: 40, t: 10, b: 24 };
 const TICKS = 3;
 
-/** Working weight as a step line: it holds flat between sessions and steps when the weight changes. */
+/** Heaviest-set weight as a step line: it holds flat between sessions and steps when the weight changes. */
 export function StepChart({ window: win, color, detailed = false }: Props) {
   const box = detailed ? FULL : MINI;
   const shown = [...(win.before ? [win.before] : []), ...win.points];
